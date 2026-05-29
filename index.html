@@ -21,9 +21,6 @@
         .btn-backup-download { background-color: #059669; font-size: 0.85rem; }
         .btn-backup-upload { background-color: #4B5563; font-size: 0.85rem; }
         .sync-box { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; background: #111827; padding: 8px 15px; border-radius: 8px; color: #FFF; font-size: 0.85rem; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .dot-green { background: #10B981; }
-        .dot-amber { background: #F59E0B; }
         .tabs-container { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
         .menu-btn { padding: 10px 20px; font-size: 1rem; font-weight: 900; text-transform: uppercase; color: #FFF; background: rgba(255,255,255,0.2); border: none; border-radius: 8px; cursor: pointer; }
         .menu-btn.active { background-color: #FFF; color: var(--azul); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -38,7 +35,6 @@
         .field-group label { font-size: 1rem; font-weight: 900; }
         .input-mediano { width: 100%; max-width: 360px; padding: 10px; font-size: 1rem; font-weight: 700; border: 3px solid var(--azul); border-radius: 10px; }
         .btn-submit-main { background-color: #059669; color: #FFF; font-weight: 900; font-size: 1.1rem; padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; align-self: flex-start; }
-        .btn-submit-main:disabled { background-color: #A7F3D0; cursor: not-allowed; }
         .table-wrapper { overflow-x: auto; background-color: #FFF; border: 1px solid var(--borde); border-radius: 12px; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background-color: var(--verde-f); color: #FFF; padding: 12px; font-weight: 700; }
@@ -60,28 +56,26 @@
         <div class="nav-container">
             <div class="management-box">
                 <span class="nav-title">🎟️ GESTIÓN:</span>
-                <select id="raffleSelect" onchange="loadSelectedRaffle()"></select>
+                <select id="raffleSelect"></select>
                 <input type="text" id="newRaffleNameInput" class="input-top" placeholder="Nueva rifa...">
-                <button type="button" onclick="ejecutarCreacionDeRifa()" class="btn-action btn-create">➕ CREAR</button>
-                <button id="deleteRaffleBtn" type="button" onclick="cleanUpRaffle()" class="btn-action btn-delete" disabled>❌ ELIMINAR</button>
+                <button type="button" id="btnCrear" class="btn-action btn-create">➕ CREAR</button>
+                <button type="button" id="deleteRaffleBtn" class="btn-action btn-delete" disabled>❌ ELIMINAR</button>
             </div>
             <div class="sync-box">
-                <div id="syncIndicatorDot" class="dot dot-green"></div>
-                <span id="syncIndicatorText">Local Activo</span>
-                <button type="button" onclick="downloadBackupFile()" class="btn-action btn-backup-download">💾 Descargar</button>
-                <button type="button" onclick="document.getElementById('fileLoaderInput').click()" class="btn-action btn-backup-upload">📂 Abrir</button>
-                <input type="file" id="fileLoaderInput" class="hidden" accept=".json" onchange="readBackupFile(event)">
+                <button type="button" id="btnDescargar" class="btn-action btn-backup-download">💾 Descargar Backup</button>
+                <button type="button" id="btnAbrir" class="btn-action btn-backup-upload">📂 Abrir Backup</button>
+                <input type="file" id="fileLoaderInput" class="hidden" accept=".json">
             </div>
         </div>
         <div class="tabs-container">
-            <button class="menu-btn active" id="btn-tab-registro" onclick="switchTab('registro')">📝 Registrar</button>
-            <button class="menu-btn" id="btn-tab-lista" onclick="switchTab('lista')">📋 Control</button>
+            <button type="button" class="menu-btn active" id="btn-tab-registro">📝 Registrar</button>
+            <button type="button" class="menu-btn" id="btn-tab-lista">📋 Control</button>
         </div>
     </nav>
     <main>
         <section id="panel-registro" class="tab-panel">
             <div class="panel-header"><h1 id="registro-titulo">Registrar Boleto</h1></div>
-            <form id="ticketForm" onsubmit="saveTicket(event)">
+            <form id="ticketForm">
                 <div class="grid-form">
                     <div class="field-group"><label>Número Boleto:</label><input type="number" id="ticketNumber" class="input-mediano" required min="0"></div>
                     <div class="field-group"><label>Comprador:</label><input type="text" id="buyerName" class="input-mediano" required></div>
@@ -100,44 +94,229 @@
         <section id="panel-lista" class="tab-panel hidden">
             <div class="panel-header"><h1 id="lista-titulo">Control de Boletos</h1></div>
             <div class="table-wrapper">
-                <!-- Se poblará dinámicamente desde JS junto con las estadísticas -->
+                <!-- Se poblará dinámicamente -->
             </div>
         </section>
     </main>
 
     <script>
-        // --- ESTADO GLOBAL DE LA APLICACIÓN ---
+        // === MOTOR DE DATOS EN MEMORIA AUTÓNOMO ===
         let appData = {
-            activeRaffleId: null,
-            raffles: {}
+            activeRaffleId: "r_base",
+            raffles: { "r_base": { name: "Rifa Principal", tickets: {} } }
         };
+
+        // --- ASIGNACIÓN DE ENLACES NATIVOS ---
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("btnCrear").onclick = ejecutarCreacionDeRifa;
+            document.getElementById("deleteRaffleBtn").onclick = cleanUpRaffle;
+            document.getElementById("ticketForm").onsubmit = saveTicket;
+            document.getElementById("btnDescargar").onclick = downloadBackupFile;
+            document.getElementById("btnAbrir").onclick = () => document.getElementById("fileLoaderInput").click();
+            document.getElementById("fileLoaderInput").onchange = readBackupFile;
+            
+            document.getElementById("raffleSelect").onchange = (e) => {
+                appData.activeRaffleId = e.target.value;
+                loadSelectedRaffle();
+            };
+            
+            document.getElementById("btn-tab-registro").onclick = () => switchTab('registro');
+            document.getElementById("btn-tab-lista").onclick = () => switchTab('lista');
+
+            refrescarTodaLaUI();
+        });
+
+        function refrescarTodaLaUI() {
+            updateRaffleSelectOptions();
+            loadSelectedRaffle();
+        }
 
         // --- ENRUTADOR DE PESTAÑAS (TABS) ---
         function switchTab(tabId) {
-            document.getElementById('panel-registro').classList.add('hidden');
-            document.getElementById('panel-lista').classList.add('hidden');
-            document.getElementById('btn-tab-registro').classList.remove('active');
-            document.getElementById('btn-tab-lista').classList.remove('active');
+            document.getElementById('panel-registro').classList.toggle('hidden', tabId !== 'registro');
+            document.getElementById('panel-lista').classList.toggle('hidden', tabId !== 'lista');
+            document.getElementById('btn-tab-registro').classList.toggle('active', tabId === 'registro');
+            document.getElementById('btn-tab-lista').classList.toggle('active', tabId === 'lista');
 
-            if (tabId === 'registro') {
-                document.getElementById('panel-registro').classList.remove('hidden');
-                document.getElementById('btn-tab-registro').classList.add('active');
-            } else if (tabId === 'lista') {
-                document.getElementById('panel-lista').classList.remove('hidden');
-                document.getElementById('btn-tab-lista').classList.add('active');
+            if (tabId === 'lista') {
                 renderTicketTable();
             }
         }
 
-        // --- PERSISTENCIA E INICIALIZACIÓN ---
-        window.addEventListener('DOMContentLoaded', () => {
-            const localData = localStorage.getItem('rifas_pro_data');
-            if (localData) {
-                try {
-                    appData = JSON.parse(localData);
-                } catch (e) {
-                    console.error("Error al leer localStorage, reiniciando datos.", e);
+        // --- GESTIÓN DE RIFAS NATIVAS ---
+        function updateRaffleSelectOptions() {
+            const select = document.getElementById('raffleSelect');
+            if (!select) return;
+            select.innerHTML = "";
+            
+            Object.keys(appData.raffles).forEach(id => {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = appData.raffles[id].name;
+                if (id === appData.activeRaffleId) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            document.getElementById('deleteRaffleBtn').disabled = Object.keys(appData.raffles).length <= 1;
+        }
+        function loadSelectedRaffle() {
+            const select = document.getElementById('raffleSelect');
+            if (select && select.value && appData.raffles[select.value]) {
+                appData.activeRaffleId = select.value;
+                const raffleName = appData.raffles[appData.activeRaffleId].name;
+                
+                document.getElementById('registro-titulo').textContent = `Registrar Boleto - ${raffleName}`;
+                document.getElementById('lista-titulo').textContent = `Control de Boletos - ${raffleName}`;
+                
+                if (!document.getElementById('panel-lista').classList.contains('hidden')) {
+                    renderTicketTable();
                 }
             }
+        }
+
+        function ejecutarCreacionDeRifa() {
+            const input = document.getElementById('newRaffleNameInput');
+            const name = input.value.trim();
             
-            if (!appData.raffles || Object.keys(appData.raffles).length === 0) {
+            if (!name) {
+                alert("Por favor, introduce un nombre válido para la rifa.");
+                return;
+            }
+
+            const newId = "r_" + Date.now();
+            appData.raffles[newId] = { name: name, tickets: {} };
+            appData.activeRaffleId = newId;
+            
+            input.value = "";
+            refrescarTodaLaUI();
+        }
+
+        function cleanUpRaffle() {
+            if (Object.keys(appData.raffles).length <= 1) return;
+            const currentName = appData.raffles[appData.activeRaffleId].name;
+            
+            if (confirm(`¿Estás seguro de eliminar la rifa "${currentName}" de la sesión actual?`)) {
+                delete appData.raffles[appData.activeRaffleId];
+                appData.activeRaffleId = Object.keys(appData.raffles);
+                refrescarTodaLaUI();
+            }
+        }
+
+        // --- MANEJO DE BOLETOS ---
+        function saveTicket(event) {
+            event.preventDefault();
+            const active = appData.raffles[appData.activeRaffleId];
+            if (!active) return;
+
+            const number = document.getElementById('ticketNumber').value.trim();
+            const buyer = document.getElementById('buyerName').value.trim();
+            const phone = document.getElementById('buyerPhone').value.trim();
+            const price = parseFloat(document.getElementById('ticketPrice').value) || 0;
+            const status = document.getElementById('ticketStatus').value;
+
+            if (!active.tickets) active.tickets = {};
+
+            if (active.tickets[number]) {
+                const overwrite = confirm(`El boleto N° ${number} ya existe a nombre de ${active.tickets[number].buyer}. ¿Deseas sobreescribirlo?`);
+                if (!overwrite) return;
+            }
+
+            active.tickets[number] = { buyer, phone, price, status };
+            
+            document.getElementById('ticketForm').reset();
+            refrescarTodaLaUI();
+            alert(`Boleto N° ${number} guardado en la memoria de la interfaz.`);
+        }
+
+        function deleteTicket(num) {
+            if (confirm(`¿Eliminar el boleto N° ${num}?`)) {
+                delete appData.raffles[appData.activeRaffleId].tickets[num];
+                renderTicketTable();
+            }
+        }
+
+        // --- PANEL DE CONTROL (TABLAS Y ESTADÍSTICAS) ---
+        function renderTicketTable() {
+            const panelLista = document.getElementById('panel-lista');
+            let statsContainer = document.getElementById('statsGridContainer');
+            
+            if (!statsContainer) {
+                statsContainer = document.createElement('div');
+                statsContainer.id = 'statsGridContainer';
+                statsContainer.className = 'grid-stats';
+                panelLista.insertBefore(statsContainer, panelLista.querySelector('.table-wrapper'));
+            }
+
+            const tableWrapper = panelLista.querySelector('.table-wrapper');
+            tableWrapper.innerHTML = `<table><thead><tr><th>N° Boleto</th><th>Comprador</th><th>Teléfono</th><th>Precio</th><th>Estado</th><th>Acción</th></tr></thead><tbody id="ticketTableBody"></tbody></table>`;
+            
+            const tbody = document.getElementById('ticketTableBody');
+            const active = appData.raffles[appData.activeRaffleId];
+            const tickets = active && active.tickets ? active.tickets : {};
+            const keys = Object.keys(tickets).sort((a,b) => parseInt(a) - parseInt(b));
+
+            let vendidos = 0, apartados = 0, total = 0;
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="msg-box">Esta rifa no contiene registros en memoria todavía.</td></tr>`;
+            } else {
+                keys.forEach(num => {
+                    const t = tickets[num];
+                    const isVendido = t.status === 'Vendido';
+                    if (isVendido) { vendidos++; total += t.price; } else { apartados++; }
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${num}</strong></td><td>${t.buyer}</td><td>${t.phone}</td><td>$${t.price.toFixed(2)}</td>
+                        <td><span class="${isVendido ? 'badge-v' : 'badge-a'}">${t.status}</span></td>
+                        <td><button type="button" class="btn-action btn-delete" style="padding:4px 8px; font-size:0.8rem;">🗑️</button></td>
+                    `;
+                    row.querySelector('.btn-delete').onclick = () => deleteTicket(num);
+                    tbody.appendChild(row);
+                });
+            }
+
+            statsContainer.innerHTML = `
+                <div class="stat-card"><div>Vendidos (Pagados)</div><div class="stat-number color-vendidos">${vendidos}</div></div>
+                <div class="stat-card"><div>Apartados (Pendientes)</div><div class="stat-number color-apartados">${apartados}</div></div>
+                <div class="stat-card"><div>Total Recaudado ($)</div><div class="stat-number color-recaudado">$${total.toFixed(2)}</div></div>`;
+        }
+
+        // --- SISTEMA TRADICIONAL DE RESPALDOS JSON ---
+        function downloadBackupFile() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const dateStamp = new Date().toISOString().slice(0, 10);
+            
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `Backup_RifasPro_${dateStamp}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function readBackupFile(event) {
+            const file = event.target.files;
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && parsed.raffles) {
+                        appData = parsed;
+                        refrescarTodaLaUI();
+                        if (!document.getElementById('panel-lista').classList.contains('hidden')) renderTicketTable();
+                        alert("¡Archivo de datos cargado con éxito en la aplicación!");
+                    } else {
+                        alert("El archivo JSON ingresado no cuenta con el formato correcto.");
+                    }
+                } catch (err) { 
+                    alert("Error al leer el archivo de respaldo."); 
+                }
+                event.target.value = "";
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
