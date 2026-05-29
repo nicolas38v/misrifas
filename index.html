@@ -97,6 +97,7 @@
 
         .btn-create { background-color: #10B981; }
         .btn-delete { background-color: #EF4444; }
+        .btn-delete:disabled { background-color: #FCA5A5; cursor: not-allowed; }
         
         .btn-backup-download { background-color: #059669; font-size: 0.85rem; padding: 8px 12px; }
         .btn-backup-upload { background-color: #4B5563; font-size: 0.85rem; padding: 8px 12px; }
@@ -123,6 +124,7 @@
             flex-wrap: wrap;
             gap: 8px;
             justify-content: center;
+            margin-top: 15px;
         }
 
         .menu-btn {
@@ -131,7 +133,7 @@
             font-weight: 900;
             text-transform: uppercase;
             color: #FFFFFF;
-            background: transparent;
+            background: rgba(255,255,255,0.2);
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -214,6 +216,7 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
+            align-self: flex-start;
         }
 
         .btn-submit-main:disabled { background-color: #A7F3D0; cursor: not-allowed; }
@@ -227,7 +230,13 @@
         @media (min-width: 640px) { .grid-stats { grid-template-columns: repeat(3, 1fr); } }
         .stat-card { background-color: #FFFFFF; padding: 20px; border-radius: 12px; border: 2px solid var(--gris-borde); text-align: center; }
         .stat-number { font-size: 2.2rem; font-weight: 900; margin-top: 8px; }
+        .color-vendidos { color: var(--verde-fuerte); }
+        .color-apartados { color: #D97706; }
+        .color-recaudado { color: var(--azul-corporativo); }
         .msg-box { padding: 10px; font-size: 1.1rem; font-weight: 800; text-align: center; }
+        
+        .badge-v { background-color: var(--verde-suave); color: var(--verde-fuerte); padding: 4px 8px; border-radius: 6px; }
+        .badge-a { background-color: #FEF3C7; color: #D97706; padding: 4px 8px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -250,35 +259,29 @@
                 <span id="syncIndicatorText">Almacenamiento Local Activo</span>
                 <button type="button" onclick="downloadBackupFile()" class="btn-action btn-backup-download" title="Guardar archivo en tu PC o Celular">💾 Descargar Archivo</button>
                 <button type="button" onclick="document.getElementById('fileLoaderInput').click()" class="btn-action btn-backup-upload" title="Cargar un archivo guardado previamente">📂 Abrir Archivo</button>
-                <input type="file" id="fileLoaderInput" accept=".json" onchange="uploadBackupFile(event)" style="display: none;">
+                <input type="file" id="fileLoaderInput" class="hidden" accept=".json" onchange="readBackupFile(event)">
             </div>
-
-            <div class="tabs-container">
-                <button type="button" onclick="switchTab('modulo-ventas')" class="menu-btn active" id="btn-modulo-ventas">📝 Ventas</button>
-                <button type="button" onclick="switchTab('modulo-revision')" class="menu-btn" id="btn-modulo-revision">📋 Revisión</button>
-                <button type="button" onclick="switchTab('modulo-resultados')" class="menu-btn" id="btn-modulo-resultados">🏆 Sorteo</button>
-            </div>
+        </div>
+        
+        <div class="tabs-container">
+            <button class="menu-btn active" onclick="switchTab('registro')">📝 Registrar Boleto</button>
+            <button class="menu-btn" onclick="switchTab('lista')">📋 Lista de Boletos</button>
         </div>
     </nav>
 
-    <!-- CUERPO PRINCIPAL -->
+    <!-- CONTENIDO PRINCIPAL -->
     <main>
-        <!-- MÓDULO 1: VENTAS -->
-        <div id="modulo-ventas" class="tab-panel">
+        <!-- PANEL DE REGISTRO -->
+        <section id="panel-registro" class="tab-panel">
             <div class="panel-header">
-                <h1>Registrar Venta de Boleto</h1>
+                <h1 id="registro-titulo">Registrar Boleto</h1>
             </div>
-            <form id="ticketForm" onsubmit="registerTicket(event)" class="grid-form">
-                <div class="field-group">
-                    <label>Nombre del Cliente</label>
-                    <input type="text" id="clientName" class="input-mediano" required placeholder="Ej. Juan Pérez">
-                </div>
-                <div class="field-group">
-                    <label>Número de Boleto (00-99)</label>
-                    <input type="number" id="ticketNumber" class="input-mediano" min="0" max="99" required placeholder="Ej. 24">
-                </div>
-                <div class="field-group">
-                    <label>Teléfono de Contacto</label>
-                    <input type="tel" id="clientPhone" class="input-mediano" required placeholder="Ej. 555-1234">
-                </div>
-                <div class="field-group" style="justify-content: flex-end;">
+            
+            <form id="ticketForm" onsubmit="saveTicket(event)">
+                <div class="grid-form">
+                    <div class="field-group">
+                        <label for="ticketNumber">Número de Boleto:</label>
+                        <input type="number" id="ticketNumber" class="input-mediano" required min="0" placeholder="Ej: 14">
+                    </div>
+                    <div class="field-group">
+                        <label for="buyerName">Nombre del Comprador:</label>
