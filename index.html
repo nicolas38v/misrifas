@@ -214,12 +214,12 @@
 
         .btn-submit-main:disabled { background-color: #A7F3D0; cursor: not-allowed; }
 
-        .table-wrapper { overflow-x: auto; background-color: #FFFFFF; border: 1px solid var(--gris-borde); border-radius: 12px; }
+        .table-wrapper { overflow-x: auto; background-color: #FFFFFF; border: 1px solid var(--gris-borde); border-radius: 12px; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { background-color: var(--verde-fuerte); color: #FFFFFF; padding: 12px; font-weight: 700; }
         td { padding: 12px; border-bottom: 1px solid var(--gris-borde); font-weight: 600; }
 
-        .grid-stats { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .grid-stats { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
         @media (min-width: 640px) { .grid-stats { grid-template-columns: repeat(3, 1fr); } }
         .stat-card { background-color: #FFFFFF; padding: 20px; border-radius: 12px; border: 2px solid var(--gris-borde); text-align: center; }
         .stat-number { font-size: 2.2rem; font-weight: 900; margin-top: 8px; }
@@ -234,57 +234,61 @@
             <div class="management-box">
                 <span class="nav-title">🎟️ GESTIÓN DE RIFA:</span>
                 <select id="raffleSelect" onchange="loadSelectedRaffle()">
-                    <option value="" disabled selected>-- Cargando Base de Datos... --</option>
+                    <!-- Se llena dinámicamente -->
                 </select>
                 <input type="text" id="newRaffleNameInput" class="input-top" style="min-width:180px;" placeholder="Nombre de nueva rifa...">
                 <button type="button" onclick="createNewRaffleDirect()" class="btn-action btn-create">➕ CREAR</button>
                 <button id="deleteRaffleBtn" type="button" onclick="cleanUpRaffle()" class="btn-action btn-delete" disabled>❌ ELIMINAR</button>
             </div>
 
-            <!-- INDICADOR CLAVE DE ESTADO DE CONEXIÓN NUBE -->
             <div class="sync-box">
                 <div id="syncIndicatorDot" class="dot dot-green"></div>
-                <span id="syncIndicatorText">Sistema en Línea Sincronizado</span>
+                <span id="syncIndicatorText">Sistema Listo (Local Storage)</span>
             </div>
 
             <div class="tabs-container">
                 <button type="button" onclick="switchTab('modulo-ventas')" class="menu-btn active" id="btn-modulo-ventas">📝 Ventas</button>
                 <button type="button" onclick="switchTab('modulo-revision')" class="menu-btn" id="btn-modulo-revision">📋 Revisión</button>
                 <button type="button" onclick="switchTab('modulo-resultados')" class="menu-btn" id="btn-modulo-resultados">🏆 Sorteo</button>
-                <button type="button" onclick="switchTab('modulo-estadisticas')" class="menu-btn" id="btn-modulo-estadisticas">📊 Estadísticas</button>
             </div>
         </div>
     </nav>
 
-    <!-- CONTENIDO PRINCIPAL -->
+    <!-- CUERPO PRINCIPAL -->
     <main>
         <!-- MÓDULO 1: VENTAS -->
-        <section id="modulo-ventas" class="tab-panel">
+        <div id="modulo-ventas" class="tab-panel">
             <div class="panel-header">
-                <h1>📝 Registrar Venta de Boletos</h1>
+                <h1>Registrar Venta de Boleto</h1>
             </div>
-            <form id="salesForm" onsubmit="handleRegistration(event)" class="grid-form" style="margin-top: 15px;">
+            <form id="ticketForm" onsubmit="registerTicket(event)" class="grid-form">
                 <div class="field-group">
-                    <label>Nombre del Comprador:</label>
-                    <input type="text" id="buyerName" class="input-mediano" required placeholder="Ej. Juan Pérez">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" id="clientName" class="input-mediano" required placeholder="Ej. Juan Pérez">
                 </div>
                 <div class="field-group">
-                    <label>Teléfono de Contacto:</label>
-                    <input type="tel" id="buyerPhone" class="input-mediano" required placeholder="Ej. +58 412 1234567">
+                    <label>Número de Boleto (00-99)</label>
+                    <input type="number" id="ticketNumber" class="input-mediano" min="0" max="99" required placeholder="Ej. 24">
                 </div>
                 <div class="field-group">
-                    <label>Números de Boletos:</label>
-                    <input type="text" id="ticketNumbers" class="input-mediano" required placeholder="Ej. 04, 15, 23">
+                    <label>Teléfono de Contacto</label>
+                    <input type="tel" id="clientPhone" class="input-mediano" required placeholder="Ej. 555-1234">
                 </div>
-                <div class="field-group">
-                    <label>Monto Pagado (\$):</label>
-                    <input type="number" id="paymentAmount" step="0.01" class="input-mediano" required placeholder="Ej. 10.00">
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <button type="submit" id="btnSubmitSale" class="btn-submit-main" disabled>Guardar Registro de Venta</button>
+                <div class="field-group" style="justify-content: flex-end;">
+                    <button type="submit" id="submitTicketBtn" class="btn-submit-main" disabled>Guardar Boleto</button>
                 </div>
             </form>
-            <div id="salesMessage" class="msg-box"></div>
-        </section>
+        </div>
 
-        <!-- MÓDULO 2: REVISIÓN -->
+        <!-- MÓDULO 2: REVISIÓN Y LISTADOS -->
+        <div id="modulo-revision" class="tab-panel hidden">
+            <div class="panel-header">
+                <h1>Boletos Vendidos</h1>
+            </div>
+            <div class="grid-stats">
+                <div class="stat-card">
+                    <div>Boletos Disponibles</div>
+                    <div id="statAvailable" class="stat-number" style="color: var(--azul-corporativo);">100</div>
+                </div>
+                <div class="stat-card">
+                    <div>Boletos Vendidos</div>
