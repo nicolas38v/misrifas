@@ -3,605 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Administración de Rifas Pro - Nube Gratis</title>
-    
+    <title>Administración de Rifas Pro</title>
     <style>
-        :root {
-            --azul-corporativo: #1E40AF;
-            --azul-oscuro: #172554;
-            --verde-suave: #DCFCE7;
-            --verde-fuerte: #047857;
-            --beige-fondo: #F5F5DC;
-            --gris-borde: #D1D5DB;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--beige-fondo);
-            color: #000000;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        nav {
-            background-color: var(--azul-corporativo);
-            padding: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            border-bottom: 4px solid var(--azul-oscuro);
-            position: sticky;
-            top: 0;
-            z-index: 50;
-        }
-
-        .nav-container {
-            max-width: 95%;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        @media (min-width: 1200px) {
-            .nav-container {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        .management-box {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 12px;
-            background-color: rgba(23, 37, 84, 0.4);
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #60A5FA;
-        }
-
-        .nav-title {
-            color: #FFFFFF;
-            font-weight: 900;
-            font-size: 1.3rem;
-            letter-spacing: 0.05em;
-        }
-
-        select, .input-top {
-            padding: 10px;
-            font-size: 1.1rem;
-            font-weight: 800;
-            border-radius: 6px;
-            border: 2px solid #FFFFFF;
-            min-width: 250px;
-            color: #000000;
-            background-color: #FFFFFF;
-        }
-
-        .btn-action {
-            padding: 10px 18px;
-            font-weight: 900;
-            font-size: 1rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #FFFFFF;
-        }
-
+        :root { --azul: #1E40AF; --oscuro: #172554; --verde-s: #DCFCE7; --verde-f: #047857; --beige: #F5F5DC; --borde: #D1D5DB; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: var(--beige); color: #000; min-height: 100vh; display: flex; flex-direction: column; }
+        nav { background-color: var(--azul); padding: 15px; border-bottom: 4px solid var(--oscuro); position: sticky; top: 0; z-index: 50; }
+        .nav-container { max-width: 95%; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        @media (min-width: 1200px) { .nav-container { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .management-box { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; background-color: rgba(23,37,84,0.4); padding: 12px; border-radius: 10px; border: 1px solid #60A5FA; }
+        .nav-title { color: #FFF; font-weight: 900; font-size: 1.1rem; }
+        select, .input-top { padding: 8px; font-size: 1rem; font-weight: 800; border-radius: 6px; border: 2px solid #FFF; min-width: 200px; }
+        .btn-action { padding: 8px 14px; font-weight: 900; border: none; border-radius: 6px; cursor: pointer; color: #FFF; }
         .btn-create { background-color: #10B981; }
         .btn-delete { background-color: #EF4444; }
         .btn-delete:disabled { background-color: #FCA5A5; cursor: not-allowed; }
-        
-        .btn-backup-download { background-color: #059669; font-size: 0.85rem; padding: 8px 12px; }
-        .btn-backup-upload { background-color: #4B5563; font-size: 0.85rem; padding: 8px 12px; }
-
-        .sync-box {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            background: #111827;
-            padding: 8px 15px;
-            border-radius: 8px;
-            color: #FFF;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-
+        .btn-backup-download { background-color: #059669; font-size: 0.85rem; }
+        .btn-backup-upload { background-color: #4B5563; font-size: 0.85rem; }
+        .sync-box { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; background: #111827; padding: 8px 15px; border-radius: 8px; color: #FFF; font-size: 0.85rem; }
         .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
         .dot-green { background: #10B981; }
         .dot-amber { background: #F59E0B; }
-
-        .tabs-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .menu-btn {
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            color: #FFFFFF;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .menu-btn.active {
-            background-color: #FFFFFF;
-            color: var(--azul-corporativo);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        main {
-            flex-grow: 1;
-            padding: 20px;
-            max-width: 95%;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        .tab-panel {
-            width: 100%;
-            background-color: #FFFFFF;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            display: flex;
-            flex-direction: column;
-        }
-
+        .tabs-container { display: flex; gap: 8px; justify-content: center; margin-top: 15px; }
+        .menu-btn { padding: 10px 20px; font-size: 1rem; font-weight: 900; text-transform: uppercase; color: #FFF; background: rgba(255,255,255,0.2); border: none; border-radius: 8px; cursor: pointer; }
+        .menu-btn.active { background-color: #FFF; color: var(--azul); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        main { flex-grow: 1; padding: 20px; max-width: 95%; width: 100%; margin: 0 auto; }
+        .tab-panel { width: 100%; background-color: #FFF; border-radius: 16px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; flex-direction: column; }
         .hidden { display: none !important; }
-
-        .panel-header {
-            border-bottom: 4px solid var(--azul-corporativo);
-            padding-bottom: 12px;
-            margin-bottom: 20px;
-        }
-
-        .panel-header h1 {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--azul-corporativo);
-        }
-
-        .grid-form {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            max-width: 850px;
-            margin-bottom: 25px;
-        }
-
-        @media (min-width: 768px) {
-            .grid-form { grid-template-columns: 1fr 1fr; }
-        }
-
-        .field-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
+        .panel-header { border-bottom: 4px solid var(--azul); padding-bottom: 12px; margin-bottom: 20px; }
+        .panel-header h1 { font-size: 1.6rem; font-weight: 900; color: var(--azul); }
+        .grid-form { display: grid; grid-template-columns: 1fr; gap: 15px; max-width: 850px; margin-bottom: 25px; }
+        @media (min-width: 768px) { .grid-form { grid-template-columns: 1fr 1fr; } }
+        .field-group { display: flex; flex-direction: column; gap: 6px; }
         .field-group label { font-size: 1rem; font-weight: 900; }
-
-        .input-mediano {
-            width: 100%;
-            max-width: 360px;
-            padding: 12px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border: 3px solid var(--azul-corporativo);
-            border-radius: 10px;
-        }
-
-        .btn-submit-main {
-            background-color: #059669;
-            color: #FFFFFF;
-            font-weight: 900;
-            font-size: 1.2rem;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            align-self: flex-start;
-        }
-
+        .input-mediano { width: 100%; max-width: 360px; padding: 10px; font-size: 1rem; font-weight: 700; border: 3px solid var(--azul); border-radius: 10px; }
+        .btn-submit-main { background-color: #059669; color: #FFF; font-weight: 900; font-size: 1.1rem; padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; align-self: flex-start; }
         .btn-submit-main:disabled { background-color: #A7F3D0; cursor: not-allowed; }
-
-        .table-wrapper { overflow-x: auto; background-color: #FFFFFF; border: 1px solid var(--gris-borde); border-radius: 12px; margin-top: 15px; }
+        .table-wrapper { overflow-x: auto; background-color: #FFF; border: 1px solid var(--borde); border-radius: 12px; margin-top: 15px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background-color: var(--verde-fuerte); color: #FFFFFF; padding: 12px; font-weight: 700; }
-        td { padding: 12px; border-bottom: 1px solid var(--gris-borde); font-weight: 600; }
-
+        th { background-color: var(--verde-f); color: #FFF; padding: 12px; font-weight: 700; }
+        td { padding: 12px; border-bottom: 1px solid var(--borde); font-weight: 600; }
         .grid-stats { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
         @media (min-width: 640px) { .grid-stats { grid-template-columns: repeat(3, 1fr); } }
-        .stat-card { background-color: #FFFFFF; padding: 20px; border-radius: 12px; border: 2px solid var(--gris-borde); text-align: center; }
-        .stat-number { font-size: 2.2rem; font-weight: 900; margin-top: 8px; }
-        .color-vendidos { color: var(--verde-fuerte); }
+        .stat-card { background-color: #FFF; padding: 15px; border-radius: 12px; border: 2px solid var(--borde); text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 900; margin-top: 8px; }
+        .color-vendidos { color: var(--verde-f); }
         .color-apartados { color: #D97706; }
-        .color-recaudado { color: var(--azul-corporativo); }
+        .color-recaudado { color: var(--azul); }
         .msg-box { padding: 10px; font-size: 1.1rem; font-weight: 800; text-align: center; }
-        
-        .badge-v { background-color: var(--verde-suave); color: var(--verde-fuerte); padding: 4px 8px; border-radius: 6px; }
+        .badge-v { background-color: var(--verde-s); color: var(--verde-f); padding: 4px 8px; border-radius: 6px; }
         .badge-a { background-color: #FEF3C7; color: #D97706; padding: 4px 8px; border-radius: 6px; }
     </style>
 </head>
 <body>
-
-    <!-- MENÚ SUPERIOR -->
     <nav>
         <div class="nav-container">
             <div class="management-box">
-                <span class="nav-title">🎟️ GESTIÓN DE RIFA:</span>
-                <select id="raffleSelect" onchange="loadSelectedRaffle()">
-                    <!-- Se llena dinámicamente -->
-                </select>
-                <input type="text" id="newRaffleNameInput" class="input-top" style="min-width:180px;" placeholder="Nombre de nueva rifa...">
+                <span class="nav-title">🎟️ GESTIÓN:</span>
+                <select id="raffleSelect" onchange="loadSelectedRaffle()"></select>
+                <input type="text" id="newRaffleNameInput" class="input-top" placeholder="Nueva rifa...">
                 <button type="button" onclick="ejecutarCreacionDeRifa(event)" class="btn-action btn-create">➕ CREAR</button>
                 <button id="deleteRaffleBtn" type="button" onclick="cleanUpRaffle(event)" class="btn-action btn-delete" disabled>❌ ELIMINAR</button>
             </div>
-
             <div class="sync-box">
                 <div id="syncIndicatorDot" class="dot dot-green"></div>
-                <span id="syncIndicatorText">Almacenamiento Local Activo</span>
-                <button type="button" onclick="downloadBackupFile()" class="btn-action btn-backup-download" title="Guardar archivo en tu PC o Celular">💾 Descargar Archivo</button>
-                <button type="button" onclick="document.getElementById('fileLoaderInput').click()" class="btn-action btn-backup-upload" title="Cargar un archivo guardado previamente">📂 Abrir Archivo</button>
+                <span id="syncIndicatorText">Local Activo</span>
+                <button type="button" onclick="downloadBackupFile()" class="btn-action btn-backup-download">💾 Descargar</button>
+                <button type="button" onclick="document.getElementById('fileLoaderInput').click()" class="btn-action btn-backup-upload">📂 Abrir</button>
                 <input type="file" id="fileLoaderInput" class="hidden" accept=".json" onchange="readBackupFile(event)">
             </div>
         </div>
-        
         <div class="tabs-container">
-            <button class="menu-btn active" id="btn-tab-registro" onclick="switchTab('registro')">📝 Registrar Boleto</button>
-            <button class="menu-btn" id="btn-tab-lista" onclick="switchTab('lista')">📋 Lista de Boletos</button>
+            <button class="menu-btn active" id="btn-tab-registro" onclick="switchTab('registro')">📝 Registrar</button>
+            <button class="menu-btn" id="btn-tab-lista" onclick="switchTab('lista')">📋 Control</button>
         </div>
     </nav>
-
-    <!-- CONTENIDO PRINCIPAL -->
     <main>
-        <!-- PANEL DE REGISTRO -->
         <section id="panel-registro" class="tab-panel">
-            <div class="panel-header">
-                <h1 id="registro-titulo">Registrar Boleto</h1>
-            </div>
-            
+            <div class="panel-header"><h1 id="registro-titulo">Registrar Boleto</h1></div>
             <form id="ticketForm" onsubmit="saveTicket(event)">
                 <div class="grid-form">
-                    <div class="field-group">
-                        <label for="ticketNumber">Número de Boleto:</label>
-                        <input type="number" id="ticketNumber" class="input-mediano" required min="0" placeholder="Ej: 14">
+                    <div class="field-group"><label>Número Boleto:</label><input type="number" id="ticketNumber" class="input-mediano" required min="0"></div>
+                    <div class="field-group"><label>Comprador:</label><input type="text" id="buyerName" class="input-mediano" required></div>
+                    <div class="field-group"><label>Teléfono:</label><input type="tel" id="buyerPhone" class="input-mediano" required></div>
+                    <div class="field-group"><label>Precio ($):</label><input type="number" id="ticketPrice" class="input-mediano" required min="0" step="0.01"></div>
+                    <div class="field-group"><label>Estado:</label>
+                        <select id="ticketStatus" class="input-mediano">
+                            <option value="Vendido">Vendido (Pagado)</option>
+                            <option value="Apartado">Apartado (Pendiente)</option>
+                        </select>
                     </div>
-                    <div class="field-group">
-
-Nombre del Comprador:
-
-
-
-Teléfono / Contacto:
-
-
-
-Precio ($):
-
-
-
-Estado del Boleto:
-
-Vendido (Pagado)
-Apartado (Pendiente)
-
-
-
-💾 Guardar Registro
-
-
-
-
-Control General y Ventas
-
-
-
-Boletos Vendidos
-0
-
-
-Boletos Apartados
-0
-
-
-Total Recaudado ($)
-0.00
-
-
-
-
-
-
-Nº Boleto
-Comprador
-Teléfono
-Precio
-Estado
-Acciones
-
-
-
-
-
-
-
-Ningún boleto registrado en esta rifa todavía.
-
-
-
-let database = {};
-let currentRaffle = "";
-window.addEventListener('DOMContentLoaded', () => {
-loadFromLocalStorage();
-renderRaffleSelect();
-if (currentRaffle) {
-loadSelectedRaffle();
-} else {
-toggleInputsLayout(false);
-}
-});
-function loadFromLocalStorage() {
-const savedData = localStorage.getItem('rifas_pro_db');
-const savedCurrent = localStorage.getItem('rifas_pro_current');
-if (savedData) {
-try {
-database = JSON.parse(savedData);
-} catch (e) {
-database = {};
-}
-}
-if (savedCurrent && database[savedCurrent]) {
-currentRaffle = savedCurrent;
-} else {
-const keys = Object.keys(database);
-currentRaffle = keys.length > 0 ? keys : "";
-}
-}
-function saveToLocalStorage() {
-localStorage.setItem('rifas_pro_db', JSON.stringify(database));
-localStorage.setItem('rifas_pro_current', currentRaffle);
-showSyncIndicator();
-}
-function showSyncIndicator() {
-const dot = document.getElementById('syncIndicatorDot');
-const text = document.getElementById('syncIndicatorText');
-dot.className = "dot dot-amber";
-text.innerText = "Guardando cambios...";
-setTimeout(() => {
-dot.className = "dot dot-green";
-text.innerText = "Almacenamiento Local Activo";
-}, 600);
-}
-function renderRaffleSelect() {
-const select = document.getElementById('raffleSelect');
-select.innerHTML = "";
-const keys = Object.keys(database);
-if (keys.length === 0) {
-const opt = document.createElement('option');
-opt.value = "";
-opt.innerText = "--- No hay rifas creadas ---";
-select.appendChild(opt);
-document.getElementById('deleteRaffleBtn').disabled = true;
-return;
-}
-keys.forEach(key => {
-const opt = document.createElement('option');
-opt.value = key;
-opt.innerText = key.toUpperCase();
-if (key === currentRaffle) opt.selected = true;
-select.appendChild(opt);
-});
-document.getElementById('deleteRaffleBtn').disabled = false;
-}
-function loadSelectedRaffle() {
-const select = document.getElementById('raffleSelect');
-if (select.value === "") {
-currentRaffle = "";
-toggleInputsLayout(false);
-return;
-}
-currentRaffle = select.value;
-localStorage.setItem('rifas_pro_current', currentRaffle);
-toggleInputsLayout(true);
-updateViewData();
-}
-function toggleInputsLayout(hasRaffle) {
-document.getElementById('submitBtn').disabled = !hasRaffle;
-const registroTitulo = document.getElementById('registro-titulo');
-const listaTitulo = document.getElementById('lista-titulo');
-if (hasRaffle) {
-registroTitulo.innerText = Registrar Boleto - Rifa: ${currentRaffle.toUpperCase()};
-listaTitulo.innerText = Control General y Ventas - Rifa: ${currentRaffle.toUpperCase()};
-} else {
-registroTitulo.innerText = "Registrar Boleto (Crea una rifa primero arriba)";
-listaTitulo.innerText = "Control General y Ventas (Crea una rifa primero arriba)";
-clearStatsAndTable();
-}
-}
-function ejecutarCreacionDeRifa(event) {
-event.preventDefault();
-const input = document.getElementById('newRaffleNameInput');
-const name = input.value.trim();
-if (!name) {
-alert("Por favor ingresa un nombre válido para la rifa.");
-return;
-}
-if (database[name]) {
-alert("Ya existe una rifa con ese nombre.");
-return;
-}
-database[name] = {};
-currentRaffle = name;
-input.value = "";
-saveToLocalStorage();
-renderRaffleSelect();
-loadSelectedRaffle();
-}
-function cleanUpRaffle(event) {
-event.preventDefault();
-if (!currentRaffle) return;
-if (confirm(¿Estás completamente seguro de eliminar la rifa "${currentRaffle.toUpperCase()}"?\nSe borrarán permanentemente todos sus boletos.)) {
-delete database[currentRaffle];
-const keys = Object.keys(database);
-currentRaffle = keys.length > 0 ? keys : "";
-saveToLocalStorage();
-renderRaffleSelect();
-loadSelectedRaffle();
-}
-}
-function saveTicket(event) {
-event.preventDefault();
-if (!currentRaffle) {
-alert("Primero debes seleccionar o crear una rifa en el menú superior.");
-return;
-}
-const num = document.getElementById('ticketNumber').value.trim();
-const name = document.getElementById('buyerName').value.trim();
-const phone = document.getElementById('buyerPhone').value.trim();
-const price = parseFloat(document.getElementById('ticketPrice').value) || 0;
-const status = document.getElementById('ticketStatus').value;
-if (database[currentRaffle][num]) {
-if (!confirm(El boleto Nº ${num} ya está registrado a nombre de ${database[currentRaffle][num].name}. ¿Deseas sobreescribir los datos?)) {
-return;
-}
-}
-database[currentRaffle][num] = {
-name: name,
-phone: phone,
-price: price,
-status: status
-};
-saveToLocalStorage();
-updateViewData();
-document.getElementById('ticketForm').reset();
-alert(¡Boleto Nº ${num} guardado exitosamente!);
-}
-function deleteTicket(num) {
-if (confirm(¿Eliminar el registro del boleto Nº ${num}?)) {
-delete database[currentRaffle][num];
-saveToLocalStorage();
-updateViewData();
-}
-}
-function updateViewData() {
-if (!currentRaffle) {
-clearStatsAndTable();
-return;
-}
-const tickets = database[currentRaffle];
-const tbody = document.getElementById('ticketsTableBody');
-tbody.innerHTML = "";
-let soldCount = 0;
-let reservedCount = 0;
-let totalMoney = 0;
-const sortedNumbers = Object.keys(tickets).sort((a, b) => parseInt(a) - parseInt(b));
-if (sortedNumbers.length === 0) {
-document.getElementById('emptyTableMessage').classList.remove('hidden');
-} else {
-document.getElementById('emptyTableMessage').classList.add('hidden');
-}
-sortedNumbers.forEach(num => {
-const t = tickets[num];
-if (t.status === "Vendido") {
-soldCount++;
-totalMoney += t.price;
-} else if (t.status === "Apartado") {
-reservedCount++;
-}
-const tr = document.createElement('tr');
-const badgeClass = t.status === "Vendido" ? "badge-v" : "badge-a";
-tr.innerHTML = <td>${num}</td> <td>${escapeHTML(t.name)}</td> <td>${escapeHTML(t.phone)}</td> <td>$${t.price.toFixed(2)}</td> <td><span class="${badgeClass}">${t.status}</span></td> <td> <button class="btn-action btn-delete" style="padding:4px 8px; font-size:0.8rem;" onclick="deleteTicket('${num}')">🗑️ Borrar</button> </td>;
-tbody.appendChild(tr);
-});
-document.getElementById('stat-sold').innerText = soldCount;
-document.getElementById('stat-reserved').innerText = reservedCount;
-document.getElementById('stat-money').innerText = totalMoney.toFixed(2);
-}
-function clearStatsAndTable() {
-document.getElementById('stat-sold').innerText = "0";
-document.getElementById('stat-reserved').innerText = "0";
-document.getElementById('stat-money').innerText = "0.00";
-document.getElementById('ticketsTableBody').innerHTML = "";
-document.getElementById('emptyTableMessage').classList.remove('hidden');
-}
-function downloadBackupFile() {
-const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(database, null, 2));
-const downloadAnchor = document.createElement('a');
-const fecha = new Date().toISOString().slice(0,10);
-downloadAnchor.setAttribute("href", dataStr);
-downloadAnchor.setAttribute("download", respaldo_rifas_${fecha}.json);
-document.body.appendChild(downloadAnchor);
-downloadAnchor.click();
-downloadAnchor.remove();
-}
-function readBackupFile(event) {
-const file = event.target.files;
-if (!file || file.length === 0) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const importedData = JSON.parse(e.target.result);
-if (typeof importedData === 'object' && importedData !== null && !Array.isArray(importedData)) {
-if (confirm("Se han encontrado rifas válidas en el archivo. ¿Deseas fusionarlas con tus rifas actuales?")) {
-database = { ...database, ...importedData };
-const keys = Object.keys(database);
-if (keys.length > 0) currentRaffle = keys;
-saveToLocalStorage();
-renderRaffleSelect();
-loadSelectedRaffle();
-alert("¡Base de datos de rifas restaurada correctamente!");
-}
-} else {
-alert("El formato del archivo JSON no coincide con la estructura del sistema.");
-}
-} catch (err) {
-alert("Error al leer el archivo. Asegúrate de que sea un archivo de respaldo .json válido.");
-}
-};
-reader.readAsText(file);
-event.target.value = "";
-}
-function switchTab(tabName) {
-const btnRegistro = document.getElementById('btn-tab-registro');
-const btnLista = document.getElementById('btn-tab-lista');
-const panelRegistro = document.getElementById('panel-registro');
-const panelLista = document.getElementById('panel-lista');
-if (tabName === 'registro') {
-btnRegistro.classList.add('active');
-btnLista.classList.remove('active');
-panelRegistro.classList.remove('hidden');
-panelLista.classList.add('hidden');
-} else {
-btnRegistro.classList.remove('active');
-btnLista.classList.add('active');
-panelRegistro.classList.add('hidden');
-panelLista.classList.remove('hidden');
-updateViewData();
-}
-}
-function escapeHTML(str) {
-return str.replace(/[&<>'"]/g,
-tag => ({ '&': '&', '<': '<', '>': '>', "'": ''', '"': '"' }[tag] || tag)
-);
-}
-
-
-
-
+                </div>
+                <button type="submit" id="submitBtn" class="btn-submit-main">💾 Guardar Registro</button>
+            </form>
+        </section>
+        <section id="panel-lista" class="tab-panel hidden">
+            <div class="panel-header"><h1 id="lista-titulo">Control General y Ventas</h1></div>
+            <div class="grid-stats">
+                <div class="stat-card"><h3>Vendidos</h3><div id="stat-sold" class="stat-number color-vendidos">0</div></div>
+                <div class="stat-card"><h3>Apartados</h3><div id="stat-reserved" class="stat-number color-apartados">0</div></div>
+                <div class="stat-card"><h3>Recaudado ($)</h3><div id="stat-money" class="stat-number color-recaudado">0.00</div></div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead><tr><th>Nº</th><th>Comprador</th><th>Teléfono</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+                    <tbody id="ticketsTableBody"></tbody>
+                </table>
+            </div>
+            <div id="emptyTableMessage" class="msg-box hidden" style="color:#6B7280;">Ningún boleto registrado aún.</div>
+        </section>
+    </main>
+    <script>
+        let database = {}, currentRaffle = "";
+        window.addEventListener('DOMContentLoaded', () => { loadFromLocalStorage(); renderRaffleSelect(); if (currentRaffle) { loadSelectedRaffle(); } else { toggleInputsLayout(false); } });
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('rifas_pro_db'), savedCurrent = localStorage.getItem('rifas_pro_current');
+            if (savedData) { try { database = JSON.parse(savedData); } catch (e) { database = {}; } }
+            if (savedCurrent && database[savedCurrent]) { currentRaffle = savedCurrent; } else { const keys = Object.keys(database); currentRaffle = keys.length > 0 ? keys[0] : ""; }
+        }
