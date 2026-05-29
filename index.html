@@ -1,3 +1,16 @@
+Lo que pegaste es el código de programación (las instrucciones lógicas) que hace que tu página funcione. No es una simple explicación.
+Es la parte que se encarga de que, al hacer clic en "CREAR", la rifa realmente se guarde, las estadísticas cambien de 0 a 1 y los datos no se borren al cerrar el navegador.
+------------------------------
+## ¿Qué debes hacer con eso?
+Debes meterlo dentro de tu archivo de la siguiente manera:
+
+   1. El primer bloque de texto que pegaste (donde dice Teléfono / Contacto, Boletos Vendidos, etc.) es HTML. Va dentro de la etiqueta <body>.
+   2. El segundo bloque de texto largo (donde dice let database = {};, function, etc.) es JavaScript. Va abajo del todo, metido estrictamente dentro de una etiqueta <script>.
+
+------------------------------
+## El código completo listo para usar
+Para que no te compliques adivinando dónde pegar cada pedazo, aquí tienes todo tu código unido, corregido y ordenado. Borra todo lo que tengas en tu archivo actual y pega esto desde la primera hasta la última línea:
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -264,8 +277,8 @@
         </div>
         
         <div class="tabs-container">
-            <button class="menu-btn active" onclick="switchTab('registro')">📝 Registrar Boleto</button>
-            <button class="menu-btn" onclick="switchTab('lista')">📋 Lista de Boletos</button>
+            <button class="menu-btn active" id="btn-tab-registro" onclick="switchTab('registro')">📝 Registrar Boleto</button>
+            <button class="menu-btn" id="btn-tab-lista" onclick="switchTab('lista')">📋 Lista de Boletos</button>
         </div>
     </nav>
 
@@ -284,8 +297,9 @@
                         <input type="number" id="ticketNumber" class="input-mediano" required min="0" placeholder="Ej: 14">
                     </div>
                     <div class="field-group">
-                        <label for="buyerName">Nombre del Comprador:</label>
-                        
+
+Nombre del Comprador:
+
 
 
 Teléfono / Contacto:
@@ -578,8 +592,8 @@ reader.readAsText(file);
 event.target.value = "";
 }
 function switchTab(tabName) {
-const btnRegistro = document.querySelectorAll('.menu-btn')[0];
-const btnLista = document.querySelectorAll('.menu-btn')[1];
+const btnRegistro = document.getElementById('btn-tab-registro');
+const btnLista = document.getElementById('btn-tab-lista');
 const panelRegistro = document.getElementById('panel-registro');
 const panelLista = document.getElementById('panel-lista');
 if (tabName === 'registro') {
@@ -600,4 +614,9 @@ return str.replace(/[&<>'"]/g,
 tag => ({ '&': '&', '<': '<', '>': '>', "'": ''', '"': '"' }[tag] || tag)
 );
 }
+
+
+
+¿Tienes alguna duda sobre **cómo guardar o abrir este archivo** en tu computadora o teléfono celular para empezar a usarlo?
+
 
