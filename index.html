@@ -121,3 +121,68 @@
             if (savedData) { try { database = JSON.parse(savedData); } catch (e) { database = {}; } }
             if (savedCurrent && database[savedCurrent]) { currentRaffle = savedCurrent; } else { const keys = Object.keys(database); currentRaffle = keys.length > 0 ? keys[0] : ""; }
         }
+        function saveToLocalStorage() { localStorage.setItem('rifas_pro_db', JSON.stringify(database)); localStorage.setItem('rifas_pro_current', currentRaffle); showSyncIndicator(); }
+function showSyncIndicator() { const dot = document.getElementById('syncIndicatorDot'), text = document.getElementById('syncIndicatorText'); dot.className = "dot dot-amber"; text.innerText = "Guardando..."; setTimeout(() => { dot.className = "dot dot-green"; text.innerText = "Local Activo"; }, 600); }
+function renderRaffleSelect() {
+const select = document.getElementById('raffleSelect'); select.innerHTML = ""; const keys = Object.keys(database);
+if (keys.length === 0) { const opt = document.createElement('option'); opt.value = ""; opt.innerText = "--- Sin rifas ---"; select.appendChild(opt); document.getElementById('deleteRaffleBtn').disabled = true; return; }
+keys.forEach(key => { const opt = document.createElement('option'); opt.value = key; opt.innerText = key.toUpperCase(); if (key === currentRaffle) opt.selected = true; select.appendChild(opt); });
+document.getElementById('deleteRaffleBtn').disabled = false;
+}
+function loadSelectedRaffle() { const select = document.getElementById('raffleSelect'); if (select.value === "") { currentRaffle = ""; toggleInputsLayout(false); return; } currentRaffle = select.value; saveToLocalStorage(); toggleInputsLayout(true); updateViewData(); }
+function toggleInputsLayout(hasRaffle) {
+document.getElementById('submitBtn').disabled = !hasRaffle; const rTit = document.getElementById('registro-titulo'), lTit = document.getElementById('lista-titulo');
+if (hasRaffle) { rTit.innerText = "Registrar Boleto - Rifa: " + currentRaffle.toUpperCase(); lTit.innerText = "Control General - Rifa: " + currentRaffle.toUpperCase(); } else { rTit.innerText = "Crea una rifa primero arriba"; lTit.innerText = "Crea una rifa primero arriba"; clearStatsAndTable(); }
+}
+function ejecutarCreacionDeRifa(event) {
+event.preventDefault(); const input = document.getElementById('newRaffleNameInput'), name = input.value.trim();
+if (!name) { alert("Ingresa un nombre válido."); return; } if (database[name]) { alert("Ya existe esa rifa."); return; }
+database[name] = {}; currentRaffle = name; input.value = ""; saveToLocalStorage(); renderRaffleSelect(); loadSelectedRaffle();
+}
+function cleanUpRaffle(event) {
+event.preventDefault(); if (!currentRaffle) return;
+if (confirm("¿Eliminar la rifa " + currentRaffle.toUpperCase() + "?")) { delete database[currentRaffle]; const keys = Object.keys(database); currentRaffle = keys.length > 0 ? keys[0] : ""; saveToLocalStorage(); renderRaffleSelect(); loadSelectedRaffle(); }
+}
+function saveTicket(event) {
+event.preventDefault(); if (!currentRaffle) return;
+const num = document.getElementById('ticketNumber').value.trim(), name = document.getElementById('buyerName').value.trim(), phone = document.getElementById('buyerPhone').value.trim(), price = parseFloat(document.getElementById('ticketPrice').value) || 0, status = document.getElementById('ticketStatus').value;
+if (database[currentRaffle][num] && !confirm("Boleto Nº " + num + " ya existe. ¿Sobreescribir?")) return;
+database[currentRaffle][num] = { name, phone, price, status }; saveToLocalStorage(); updateViewData(); document.getElementById('ticketForm').reset(); alert("¡Guardado!");
+}
+function deleteTicket(num) { if (confirm("¿Eliminar boleto Nº " + num + "?")) { delete database[currentRaffle][num]; saveToLocalStorage(); updateViewData(); } }
+function updateViewData() {
+if (!currentRaffle) { clearStatsAndTable(); return; }
+const tickets = database[currentRaffle], tbody = document.getElementById('ticketsTableBody'); tbody.innerHTML = "";
+let sold = 0, res = 0, money = 0; const sorted = Object.keys(tickets).sort((a, b) => parseInt(a) - parseInt(b));
+if (sorted.length === 0) { document.getElementById('emptyTableMessage').classList.remove('hidden'); } else { document.getElementById('emptyTableMessage').classList.add('hidden'); }
+sorted.forEach(num => {
+const t = tickets[num]; if (t.status === "Vendido") { sold++; money += t.price; } else { res++; }
+const tr = document.createElement('tr'), bClass = t.status === "Vendido" ? "badge-v" : "badge-a";
+tr.innerHTML = ""+num+""+escapeHTML(t.name)+""+escapeHTML(t.phone)+"$"+t.price.toFixed(2)+""+t.status+"🗑️ Borrar";
+tbody.appendChild(tr);
+});
+document.getElementById('stat-sold').innerText = sold; document.getElementById('stat-reserved').innerText = res; document.getElementById('stat-money').innerText = money.toFixed(2);
+}
+function clearStatsAndTable() { document.getElementById('stat-sold').innerText = "0"; document.getElementById('stat-reserved').innerText = "0"; document.getElementById('stat-money').innerText = "0.00"; document.getElementById('ticketsTableBody').innerHTML = ""; document.getElementById('emptyTableMessage').classList.remove('hidden'); }
+function downloadBackupFile() {
+const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(database, null, 2)), dl = document.createElement('a'), f = new Date().toISOString().slice(0,10);
+dl.setAttribute("href", dataStr); dl.setAttribute("download", "respaldo_rifas_" + f + ".json"); document.body.appendChild(dl); dl.click(); dl.remove();
+}
+function readBackupFile(event) {
+const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
+reader.onload = function(e) {
+try {
+const imported = JSON.parse(e.target.result);
+if (typeof imported === 'object' && imported !== null && !Array.isArray(imported)) {
+if (confirm("¿Fusionar respaldos?")) { database = { ...database, ...imported }; const keys = Object.keys(database); if (keys.length > 0) currentRaffle = keys[0]; saveToLocalStorage(); renderRaffleSelect(); loadSelectedRaffle(); alert("¡Restaurado!"); }
+} else { alert("Formato inválido."); }
+} catch (err) { alert("Error al leer archivo."); }
+};
+reader.readAsText(file); event.target.value = "";
+}
+function switchTab(tabName) {
+const btnR = document.getElementById('btn-tab-registro'), btnL = document.getElementById('btn-tab-lista'), pR = document.getElementById('panel-registro'), pL = document.getElementById('panel-lista');
+if (tabName === 'registro') { btnR.classList.add('active'); btnL.classList.remove('active'); pR.classList.remove('hidden'); pL.classList.add('hidden'); } else { btnR.classList.remove('active'); btnL.classList.add('active'); pR.classList.add('hidden'); pL.classList.remove('hidden'); updateViewData(); }
+}
+function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&', '<': '<', '>': '>', "'": ''', '"': '"' }[tag] || tag)); }
+
